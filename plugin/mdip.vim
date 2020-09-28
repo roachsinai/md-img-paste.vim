@@ -3,7 +3,7 @@ if exists("loaded_mdip")
 endif
 
 let g:vimage_paste_config_file = get(g:, 'vimage_paste_config_file', '.vimage_paste.json')
-let g:vimage_paste_directory_name = get(g:, 'vimage_paste_directory_name', ['images', 'imgs', 'assets', 'image', 'img', 'asset'])
+let g:vimage_paste_directory_name = get(g:, 'vimage_paste_directory_name', ['.images', '.imgs', '.assets', 'images', 'imgs', 'assets', 'image', 'img', 'asset'])
 let s:image_tmp_name_prefix = '/tmp/vimge_paste'
 
 " https://stackoverflow.com/questions/57014805/check-if-using-windows-console-in-vim-while-in-windows-subsystem-for-linux
@@ -15,22 +15,45 @@ function! s:IsWSL()
     return 0
 endfunction
 
+function! s:GetRootDirs()
+	let project_root_dir = ProjectRootGuess()
+
+	let prev_rootmarkers = g:rootmarkers
+	let g:rootmarkers = [g:vimage_paste_config_file]
+	let images_root_dir = ProjectRootGuess()
+	let g:rootmarkers = prev_rootmarkers
+
+	let chars_count = len(project_root_dir)
+	" config_file exists in images_root_dir and images_root_dir is subdirectory of project_root_dir
+	if !empty(glob(images_root_dir . s:path_separator . g:vimage_paste_config_file)) &&
+		\ (chars_count < len(images_root_dir) && images_root_dir[:chars_count] == project_root_dir . s:path_separator)
+			return images_root_dir
+	endif
+	return project_root_dir
+endfunction
+
 function! s:SafeMakeDir()
-	let root_dir = asyncrun#get_root('%')
-	let config_file_absolute_path = root_dir . s:path_separator . g:vimage_paste_config_file
+	let images_root = s:GetRootDirs()
+	let config_file_absolute_path = images_root . s:path_separator . g:vimage_paste_config_file
+	" maybe config_file exists in project_root_dir
+	let config_json = {}
 	if !empty(glob(config_file_absolute_path))
-		let images_dir = json_decode(join(readfile(config_file_absolute_path),''))['images_dir']
+		let json_parsed = json_decode(join(readfile(config_file_absolute_path), ''))
+		if type(json_parsed) == 4 | let config_json = json_parsed | endif
+	endif
+	if has_key(config_json, s:os)
+		let images_dir = config_json[s:os]['images_dir']
 		" string prefix to fill in link part of ![]()
 		let image_link_prefix = images_dir
 	else
 		let image_link_prefix = g:vimage_paste_directory_name[0]
 		for item in g:vimage_paste_directory_name
-			if isdirectory(root_dir . s:path_separator . item) == 1
+			if isdirectory(images_root . s:path_separator . item) == 1
 				let image_link_prefix = item
 				break
 			endif
 		endfor
-		let images_dir = root_dir . s:path_separator . image_link_prefix
+		let images_dir = images_root . s:path_separator . image_link_prefix
 	endif
 
     if !isdirectory(images_dir)
@@ -77,11 +100,9 @@ endfunction
 
 function! s:SaveImage(images_dir)
     if s:os == "Linux"
-        " Linux could also mean Windowns Subsystem for Linux
-        if s:IsWSL()
-            return s:SaveImageWSL(a:images_dir)
-        endif
         return s:SaveImageLinux(a:images_dir)
+    elseif s:os == "WSL"
+            return s:SaveImageWSL(a:images_dir)
     elseif s:os == "Darwin"
         return s:SaveImageMacOS(a:images_dir)
     elseif s:os == "Windows"
@@ -102,6 +123,9 @@ function! s:MarkdownClipboardImage()
     if !(has("win64") || has("win32") || has("win16"))
         let s:os = substitute(system('uname'), '\n', '', '')
     endif
+	if s:IsWSL()
+		let s:os = "WSL"
+	endif
 	let s:path_separator = (s:os == "Windows" ? '\' : '/')
 
     let [images_dir, image_link_prefix] = s:SafeMakeDir()
