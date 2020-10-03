@@ -27,7 +27,7 @@ Plug 'roachsinai/md-img-paste.vim'
 
 Images root is about where to save the images and default value is identical to project root.  It could be better when you set `g:vimage_paste_config_file`, it will be replaced by its default value `.vimage_paste.json` in following explanation. Directory of nearest ancestor `.vimage_paste.json` of the editing file is images root for this file.
 
-### Example
+#### Example
 
 Think about this situation: all your notes are saved to a directory named: `Notes`:
 
@@ -55,15 +55,22 @@ Please use `g:vimage_paste_directory_name` which must be a non-empty list of str
 
 Default value of `g:vimage_paste_directory_name` is `['.images', '.imgs', '.assets', 'images', 'imgs', 'assets', 'image', 'img', 'asset']`.
 
-### Setting is to short
+### What's the name of saved images?
+
+After run `MarkdownClipboardImage`, will let you input image name. As image in clipboard has been saved, you could now use clipboard again.
+
+One more global variable `g:vimage_paste_how_insert_link` default value if `A `, which means append text in current line. As there is a space in that value, so a space is first to append, following is `![your_input](images_dir/your_input.png)`.
+
+## Setting is to short
 
 ```
 let g:vimage_paste_directory_name = ['images']
 let g:vimage_paste_config_file = '.config.json'
+let g:vimage_paste_how_insert_link = 'A '
 nnoremap <leader>p :MarkdownClipboardImage<CR>
 ```
 
-### For linux user
+## For linux user
 
 Install `xclip` first as this plugin gets clipboard content by running the `xclip` command.
 

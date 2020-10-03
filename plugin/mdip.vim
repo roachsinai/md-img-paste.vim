@@ -5,6 +5,7 @@ endif
 let g:vimage_paste_config_file = get(g:, 'vimage_paste_config_file', '.vimage_paste.json')
 let g:vimage_paste_directory_name = get(g:, 'vimage_paste_directory_name', ['.images', '.imgs', '.assets', 'images', 'imgs', 'assets', 'image', 'img', 'asset'])
 let s:image_tmp_name_prefix = '/tmp/vimge_paste'
+let g:vimage_paste_how_insert_link = get(g:, 'vimage_paste_how_insert_link', 'A ')
 
 " https://stackoverflow.com/questions/57014805/check-if-using-windows-console-in-vim-while-in-windows-subsystem-for-linux
 function! s:IsWSL()
@@ -41,10 +42,13 @@ function! s:SafeMakeDir()
 		let json_parsed = json_decode(join(readfile(config_file_absolute_path), ''))
 		if type(json_parsed) == 4 | let config_json = json_parsed | endif
 	endif
-	if has_key(config_json, s:os)
-		let images_dir = config_json[s:os]['images_dir']
+	if has_key(config_json, 'images_dir')
+		let images_dir = config_json['images_dir']
 		" string prefix to fill in link part of ![]()
 		let image_link_prefix = images_dir
+		if images_dir[0] == '.'
+			let images_dir = system('readlink -f ' . images_root . s:path_separator . image_link_prefix)
+		endif
 	else
 		let image_link_prefix = g:vimage_paste_directory_name[0]
 		for item in g:vimage_paste_directory_name
@@ -136,8 +140,8 @@ function! s:MarkdownClipboardImage()
         return
     else
 		let image_link = image_link_prefix . s:path_separator . image_name . '.' . extension
-        execute 'normal! i![' . image_name . '](' . image_link . ')'
-		echom "Image saved to directory: " . images_dir
+        execute 'normal! ' . g:vimage_paste_how_insert_link . '![' . image_name . '](' . image_link . ')'
+		echom "Image saved to: " . images_dir . s:path_separator . image_name . '.' . extension
     endif
 endfunction
 
