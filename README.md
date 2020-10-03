@@ -59,14 +59,14 @@ Default value of `g:vimage_paste_directory_name` is `['.images', '.imgs', '.asse
 
 After run `MarkdownClipboardImage`, will let you input image name. As image in clipboard has been saved, you could now use clipboard again.
 
-One more global variable `g:vimage_paste_how_insert_link` default value if `A `, which means append text in current line. As there is a space in that value, so a space is first to append, following is `![your_input](images_dir/your_input.png)`.
+One more global variable `g:vimage_paste_how_insert_link` default value if `A`, which means append `![image_name](images_dir/image_name.png)` in the end of current line.
 
 ## Setting is to short
 
 ```
 let g:vimage_paste_directory_name = ['images']
 let g:vimage_paste_config_file = '.config.json'
-let g:vimage_paste_how_insert_link = 'A '
+let g:vimage_paste_how_insert_link = 'A'
 nnoremap <leader>p :MarkdownClipboardImage<CR>
 ```
 

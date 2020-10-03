@@ -5,7 +5,7 @@ endif
 let g:vimage_paste_config_file = get(g:, 'vimage_paste_config_file', '.vimage_paste.json')
 let g:vimage_paste_directory_name = get(g:, 'vimage_paste_directory_name', ['.images', '.imgs', '.assets', 'images', 'imgs', 'assets', 'image', 'img', 'asset'])
 let s:image_tmp_name_prefix = '/tmp/vimge_paste'
-let g:vimage_paste_how_insert_link = get(g:, 'vimage_paste_how_insert_link', 'A ')
+let g:vimage_paste_how_insert_link = get(g:, 'vimage_paste_how_insert_link', 'A')
 
 " https://stackoverflow.com/questions/57014805/check-if-using-windows-console-in-vim-while-in-windows-subsystem-for-linux
 function! s:IsWSL()
