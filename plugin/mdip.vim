@@ -47,17 +47,18 @@ function! s:SafeMakeDir()
 		" string prefix to fill in link part of ![]()
 		let image_link_prefix = images_dir
 		if images_dir[0] == '.'
-			let images_dir = system('readlink -f ' . images_root . s:path_separator . image_link_prefix)
+			let images_dir = trim(system('realpath ' . expand("%:p") . s:path_separator . image_link_prefix))
 		endif
 	else
-		let image_link_prefix = g:vimage_paste_directory_name[0]
+		let image_dir_name = g:vimage_paste_directory_name[0]
 		for item in g:vimage_paste_directory_name
 			if isdirectory(images_root . s:path_separator . item) == 1
-				let image_link_prefix = item
+				let image_dir_name = item
 				break
 			endif
 		endfor
-		let images_dir = images_root . s:path_separator . image_link_prefix
+		let images_dir = images_root . s:path_separator . image_dir_name
+		let image_link_prefix = trim(system('realpath --relative-to=' . expand("%:p:h") . ' ' . images_dir))
 	endif
 
     if !isdirectory(images_dir)
