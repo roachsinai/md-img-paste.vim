@@ -90,6 +90,7 @@ function! s:SaveImageLinux(images_dir) abort
 	let input_prompt = 'Image name: '
 	while v:true
 		let image_name = s:InputName(input_prompt)
+		if image_name == '' | return [-2, 0] | endif
 		let image_path = a:images_dir . '/' . image_name . '.' . extension
 		if filereadable(image_path)
 			let input_prompt = 'Image ' . image_name . ' exists, input name again: '
@@ -135,13 +136,12 @@ function! s:MarkdownClipboardImage()
     let [images_dir, image_link_prefix] = s:SafeMakeDir()
     " image_name, used for both alt tag and image link
     let [image_name, extension] = s:SaveImage(images_dir)
-    if image_name == -1
-		echo "Not a image in clipboard."
-        return
-    else
+    if type(image_name) == 1
 		let image_link = image_link_prefix . s:path_separator . image_name . '.' . extension
         execute 'normal! ' . g:vimage_paste_how_insert_link . '![' . image_name . '](' . image_link . ')'
 		echom "Image saved to: " . images_dir . s:path_separator . image_name . '.' . extension
+	elseif image_name == -1
+		echo "Not a image in clipboard."
     endif
 endfunction
 
