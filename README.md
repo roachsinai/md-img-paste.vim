@@ -45,19 +45,19 @@ Think about this situation: all your notes are saved to a directory named: `Note
 └── Writing
 ```
 
-Porject root is `Notes` and all `.vimage_paste.json` is just a blank file. Then when you editing a file under `Listening`, run command `MarkdownClipboardImage` will save image in clipboard to a **directory** under `Listening` directly, same with `Reading, Speaking and Chinese`. That means `MarkdownClipboardImage` will find the nearest ancestor `.vimage_paste.json` and save image under that directory.
+Porject root is `Notes` which has a blank file name `.root` and all `.vimage_paste.json` are blank files, too. Then when you editing a file under directory `Listening`, run command `MarkdownClipboardImage` will save image in clipboard to a **directory** (.images by default) under `Listening` directly, same with `Reading, Speaking and Chinese`. That means `MarkdownClipboardImage` will find the nearest ancestor `.vimage_paste.json` and save image under that directory.
 
-If failed to find a `.vimage_paste.json`, like `Writing`, image will save to a **directory** under project root.
+If failed to find a `.vimage_paste.json`, like when editing file under directory `Writing`, image will save to **.images** under `Notes`, as there is a `.root` under `Notes`. Finally image will be saved to the directory same with editing file when Vim could find neither `.vimage_paste.json` and `.root`.
 
 ### What's the name of that directory to save images?
 
-Please use `g:vimage_paste_directory_name` which must be a non-empty list of string. When saving image from clipboard, this plugin will iterate each item in `g:vimage_paste_directory_name` to check whether already has a corresponding directory (same directory name with item) under images root in order. Image will be save to the first hit directory and first item will be used if not hits.
+Please use `g:vimage_paste_directory_name` which must be a non-empty list of string. When saving image from clipboard, this plugin will iterate each item in `g:vimage_paste_directory_name` to check whether already has a corresponding directory (same directory name with current item) under images root in order. Image will be save to the first hit directory and first item will be used if no hits.
 
 Default value of `g:vimage_paste_directory_name` is `['.images', '.imgs', '.assets', 'images', 'imgs', 'assets', 'image', 'img', 'asset']`.
 
 ### What's the name of saved images?
 
-After run `MarkdownClipboardImage`, will let you input image name. As image in clipboard has been saved, you could now use clipboard again.
+Will ask you input image name, after run `MarkdownClipboardImage`. As image in clipboard has been saved, you could now use clipboard again.
 
 One more global variable `g:vimage_paste_how_insert_link` default value if `A`, which means append `![image_name](images_dir/image_name.png)` in the end of current line.
 
@@ -65,7 +65,7 @@ One more global variable `g:vimage_paste_how_insert_link` default value if `A`, 
 
 ```
 let g:vimage_paste_directory_name = ['images']
-let g:vimage_paste_config_file = '.config.json'
+let g:vimage_paste_config_file = '.vimage_paste.json'
 let g:vimage_paste_how_insert_link = 'A'
 nnoremap <leader>p :MarkdownClipboardImage<CR>
 ```
@@ -76,6 +76,6 @@ Install `xclip` first as this plugin gets clipboard content by running the `xcli
 
 ## Acknowledgements
 
-I'm not yet perfect at writing vim plugins but I managed to do it. Thanks to [Karl Yngve Lervåg](https://vi.stackexchange.com/users/21/karl-yngve-lerv%C3%A5g) and [Rich](https://vi.stackexchange.com/users/343/rich) for help on [vi.stackexchange.com](https://vi.stackexchange.com/questions/14114/paste-link-to-image-in-clipboard-when-editing-markdown) where they proposed a solution for my use case.
-}
-```
+> I'm not yet perfect at writing vim plugins but I managed to do it. Thanks to [Karl Yngve Lervåg](https://vi.stackexchange.com/users/21/karl-yngve-lerv%C3%A5g) and [Rich](https://vi.stackexchange.com/users/343/rich) for help on [vi.stackexchange.com](https://vi.stackexchange.com/questions/14114/paste-link-to-image-in-clipboard-when-editing-markdown) where they proposed a solution for my use case.
+
+This project is forked from @ferrine 's [md-img-paste.vim](https://github.com/K/md-img-paste.vim). Thanks a lot!
