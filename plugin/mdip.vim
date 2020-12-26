@@ -44,10 +44,11 @@ function! s:SafeMakeDir()
 	endif
 	if has_key(config_json, 'images_dir')
 		let images_dir = config_json['images_dir']
+		let idx_check_separator = len(images_dir) - len(s:path_separator)
 		" string prefix to fill in link part of ![]()
-		let image_link_prefix = images_dir
+		let image_link_prefix = (images_dir[idx_check_separator:] == s:path_separator ? images_dir[:idx_check_separator - 1] : images_dir)
 		if images_dir[0] == '.'
-			let images_dir = trim(system('realpath ' . expand("%:p") . s:path_separator . image_link_prefix))
+			let images_dir = trim(system('realpath ' . expand("%:p:h") . s:path_separator . image_link_prefix))
 		endif
 	else
 		let image_dir_name = g:vimage_paste_directory_name[0]
