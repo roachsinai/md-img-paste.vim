@@ -20,7 +20,7 @@ function! s:DetectOS()
     " detect os: https://vi.stackexchange.com/questions/2572/detect-os-in-vimscript
     let s:os = "Windows"
     if !(has("win64") || has("win32") || has("win16"))
-        let s:os = s:RemoveTrailingNewline(system('uname'))
+        let s:os = s:RemoveTrailingChars(system('uname'), '\n')
     endif
 	if s:IsWSL()
 		let s:os = "WSL"
@@ -56,11 +56,10 @@ function! s:SafeMakeDir()
 	endif
 	if has_key(config_json, 'images_dir')
 		let images_dir = config_json['images_dir']
-		let idx_check_separator = len(images_dir) - len(s:path_separator)
 		" string prefix to fill in link part of ![]()
-		let image_link_prefix = (images_dir[idx_check_separator:] == s:path_separator ? images_dir[:idx_check_separator - 1] : images_dir)
+		let image_link_prefix = s:RemoveTrailingChars(images_dir, s:path_separator)
 		if images_dir[0] == '.'
-			let images_dir = s:RemoveTrailingNewline(system('realpath ' . expand("%:p:h") . s:path_separator . image_link_prefix))
+			let images_dir = s:RemoveTrailingChars(system('realpath ' . expand("%:p:h") . s:path_separator . image_link_prefix), '\n')
 		endif
 	else
 		let image_dir_name = g:vimage_paste_directory_name[0]
@@ -71,7 +70,7 @@ function! s:SafeMakeDir()
 			endif
 		endfor
 		let images_dir = images_root . s:path_separator . image_dir_name
-		let image_link_prefix = s:RemoveTrailingNewline(system('realpath --relative-to=' . expand("%:p:h") . ' ' . images_dir))
+		let image_link_prefix = s:RemoveTrailingChars(system('realpath --relative-to=' . expand("%:p:h") . ' ' . images_dir), '\n')
 	endif
 
     if !isdirectory(images_dir)
@@ -136,7 +135,7 @@ function! s:DeleteImageLinux()
 		echom 'Not an image tag line.'
 		return
 	endif
-	let l:image_path = s:RemoveTrailingNewline(system('cd ' . expand("%:p:h") . ' && realpath ' . l:matches[-1]))
+	let l:image_path = s:RemoveTrailingChars(system('cd ' . expand("%:p:h") . ' && realpath ' . l:matches[-1]), '\n')
 	if filereadable(l:image_path)
 		let l:choice = confirm('Delete image: ' . l:matches[-1] . '?', "&Yes\n&No", 2)
 		if l:choice == 1
@@ -170,8 +169,8 @@ function! s:InputName(input_prompt)
     return name
 endfunction
 
-function! s:RemoveTrailingNewline(outputs)
-	return substitute(a:outputs, '\n$', '', '')
+function! s:RemoveTrailingChars(target, trailing)
+	return substitute(a:target, a:trailing . '$', '', '')
 endfunction
 
 function! s:MarkdownClipboardImage()
