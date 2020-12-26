@@ -8,6 +8,8 @@ You are editing a markdown file and have an image on the clipboard and want to p
 
 Instead of first copying it to that directory, you want to do it with a single key press in Vim. So you hooks, for example, `<leader>p` to a command `MarkdownClipboardImage`, which saves the image from the clipboard to `images_dir/image_name.png`, and inserts `![image_name](images_dir/image_name.png)` into the file.
 
+This plugin also provides a command `MarkdownDeleteImage` which will delete image saved by command `MarkdownClipboardImage`. All you need to do is put cursor on the line which has one image tag then run `:MarkDeleteImage`.
+
 ## Installation
 
 ```
@@ -68,6 +70,7 @@ let g:vimage_paste_directory_name = ['images']
 let g:vimage_paste_config_file = '.vimage_paste.json'
 let g:vimage_paste_how_insert_link = 'A'
 nnoremap <leader>p :MarkdownClipboardImage<CR>
+nnoremap <leader>id :MarkdownDeleteImage<CR>
 ```
 
 ## For linux user
