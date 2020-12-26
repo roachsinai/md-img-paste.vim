@@ -134,6 +134,7 @@ function! s:DeleteImageLinux()
 	let l:matches = filter(matchlist(l:cur_line, '\[\(.\{-}\)\](\(.\{-}\))'), 'v:val !=# ""')
 	if len(l:matches) < 2
 		echom 'Not an image tag line.'
+		return
 	endif
 	let l:image_path = substitute(system('cd ' . expand("%:p:h") . ' && realpath ' . l:matches[-1]), '\n$', '', '')
 	if filereadable(l:image_path)
