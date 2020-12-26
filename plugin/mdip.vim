@@ -145,7 +145,7 @@ function! s:DeleteImageLinux()
 			let l:new_line = (l:image_tag_start == 0? '' : l:cur_line[:l:image_tag_start - 1]) . l:cur_line[l:image_tag_end:]
 			call setline(line("."), l:new_line)
 		else
-			echom 'Wrong image path.'
+			echo 'Quit image delete operation.'
 		endif
 	endif
 endfunction
