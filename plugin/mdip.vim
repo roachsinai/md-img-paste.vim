@@ -16,6 +16,18 @@ function! s:IsWSL()
     return 0
 endfunction
 
+function! s:DetectOS()
+    " detect os: https://vi.stackexchange.com/questions/2572/detect-os-in-vimscript
+    let s:os = "Windows"
+    if !(has("win64") || has("win32") || has("win16"))
+		let s:os = substitute(system('uname'), '\n', '', '')
+    endif
+	if s:IsWSL()
+		let s:os = "WSL"
+	endif
+	let s:path_separator = (s:os == "Windows" ? '\' : '/')
+endfunction
+
 function! s:GetRootDirs()
 	let project_root_dir = ProjectRootGuess()
 
@@ -117,6 +129,39 @@ function! s:SaveImage(images_dir)
     endif
 endfunction
 
+function! s:DeleteImageLinux()
+	let l:cur_line = getline(".")
+	let l:matches = filter(matchlist(l:cur_line, '\[\(.\{-}\)\](\(.\{-}\))'), 'v:val !=# ""')
+	if len(l:matches) < 2
+		echom 'Not an image tag line.'
+	endif
+	let l:image_path = substitute(system('cd ' . expand("%:p:h") . ' && realpath ' . l:matches[-1]), '\n$', '', '')
+	if filereadable(l:image_path)
+		let l:choice = confirm('Delete image: ' . l:matches[-1] . '?', "&Yes\n&No", 2)
+		if l:choice == 1
+			call delete(l:image_path)
+			let l:image_tag_start = stridx(l:cur_line, l:matches[0]) - 1
+			let l:image_tag_end = stridx(l:cur_line, l:matches[0]) + len(l:matches[0])
+			let l:new_line = (l:image_tag_start == 0? '' : l:cur_line[:l:image_tag_start - 1]) . l:cur_line[l:image_tag_end:]
+			call setline(line("."), l:new_line)
+		else
+			echom 'Wrong image path.'
+		endif
+	endif
+endfunction
+
+function! s:DeleteImage()
+    if s:os == "Linux"
+        return s:DeleteImageLinux()
+    elseif s:os == "WSL"
+            return s:DeleteImageWSL()
+    elseif s:os == "Darwin"
+        return s:DeleteImageMacOS()
+    elseif s:os == "Windows"
+        return s:DeleteImageWin32()
+    endif
+endfunction
+
 function! s:InputName(input_prompt)
     call inputsave()
     let name = input(a:input_prompt)
@@ -125,16 +170,6 @@ function! s:InputName(input_prompt)
 endfunction
 
 function! s:MarkdownClipboardImage()
-    " detect os: https://vi.stackexchange.com/questions/2572/detect-os-in-vimscript
-    let s:os = "Windows"
-    if !(has("win64") || has("win32") || has("win16"))
-        let s:os = substitute(system('uname'), '\n', '', '')
-    endif
-	if s:IsWSL()
-		let s:os = "WSL"
-	endif
-	let s:path_separator = (s:os == "Windows" ? '\' : '/')
-
     let [images_dir, image_link_prefix] = s:SafeMakeDir()
     " image_name, used for both alt tag and image link
     let [image_name, extension] = s:SaveImage(images_dir)
@@ -148,4 +183,6 @@ function! s:MarkdownClipboardImage()
 endfunction
 
 command MarkdownClipboardImage call s:MarkdownClipboardImage()
+command MarkdownDeleteImage call s:DeleteImage()
+call s:DetectOS()
 let loaded_mdip = 1
