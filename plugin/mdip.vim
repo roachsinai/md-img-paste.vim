@@ -20,7 +20,7 @@ function! s:DetectOS()
     " detect os: https://vi.stackexchange.com/questions/2572/detect-os-in-vimscript
     let s:os = "Windows"
     if !(has("win64") || has("win32") || has("win16"))
-		let s:os = substitute(system('uname'), '\n', '', '')
+        let s:os = s:RemoveTrailingNewline(system('uname'))
     endif
 	if s:IsWSL()
 		let s:os = "WSL"
@@ -60,7 +60,7 @@ function! s:SafeMakeDir()
 		" string prefix to fill in link part of ![]()
 		let image_link_prefix = (images_dir[idx_check_separator:] == s:path_separator ? images_dir[:idx_check_separator - 1] : images_dir)
 		if images_dir[0] == '.'
-			let images_dir = trim(system('realpath ' . expand("%:p:h") . s:path_separator . image_link_prefix))
+			let images_dir = s:RemoveTrailingNewline(system('realpath ' . expand("%:p:h") . s:path_separator . image_link_prefix))
 		endif
 	else
 		let image_dir_name = g:vimage_paste_directory_name[0]
@@ -71,7 +71,7 @@ function! s:SafeMakeDir()
 			endif
 		endfor
 		let images_dir = images_root . s:path_separator . image_dir_name
-		let image_link_prefix = trim(system('realpath --relative-to=' . expand("%:p:h") . ' ' . images_dir))
+		let image_link_prefix = s:RemoveTrailingNewline(system('realpath --relative-to=' . expand("%:p:h") . ' ' . images_dir))
 	endif
 
     if !isdirectory(images_dir)
@@ -136,7 +136,7 @@ function! s:DeleteImageLinux()
 		echom 'Not an image tag line.'
 		return
 	endif
-	let l:image_path = substitute(system('cd ' . expand("%:p:h") . ' && realpath ' . l:matches[-1]), '\n$', '', '')
+	let l:image_path = s:RemoveTrailingNewline(system('cd ' . expand("%:p:h") . ' && realpath ' . l:matches[-1]))
 	if filereadable(l:image_path)
 		let l:choice = confirm('Delete image: ' . l:matches[-1] . '?', "&Yes\n&No", 2)
 		if l:choice == 1
@@ -168,6 +168,10 @@ function! s:InputName(input_prompt)
     let name = input(a:input_prompt)
     call inputrestore()
     return name
+endfunction
+
+function! s:RemoveTrailingNewline(outputs)
+	return substitute(a:outputs, '\n$', '', '')
 endfunction
 
 function! s:MarkdownClipboardImage()
