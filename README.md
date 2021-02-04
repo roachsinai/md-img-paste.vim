@@ -63,7 +63,7 @@ Will ask you input image name, after run `MarkdownClipboardImage`. As image in c
 
 One more global variable `g:vimage_paste_how_insert_link` default value if `A`, which means append `![image_name](images_dir/image_name.png)` in the end of current line.
 
-## Setting is to short
+## Setting is too short
 
 ```
 let g:vimage_paste_directory_name = ['images']
@@ -81,4 +81,4 @@ Install `xclip` first as this plugin gets clipboard content by running the `xcli
 
 > I'm not yet perfect at writing vim plugins but I managed to do it. Thanks to [Karl Yngve Lervåg](https://vi.stackexchange.com/users/21/karl-yngve-lerv%C3%A5g) and [Rich](https://vi.stackexchange.com/users/343/rich) for help on [vi.stackexchange.com](https://vi.stackexchange.com/questions/14114/paste-link-to-image-in-clipboard-when-editing-markdown) where they proposed a solution for my use case.
 
-This project is forked from @ferrine 's [md-img-paste.vim](https://github.com/K/md-img-paste.vim). Thanks a lot!
+This project is forked from @ferrine 's [md-img-paste.vim](https://github.com/ferrine/md-img-paste.vim). Thanks a lot!
