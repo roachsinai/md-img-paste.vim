@@ -186,7 +186,27 @@ function! s:MarkdownClipboardImage()
     endif
 endfunction
 
+function! s:GitAddWithImage()
+    let l:line_start = 0
+    let l:line_end = line("$")
+    let [l:images_dir, l:image_link_prefix] = s:SafeMakeDir()
+    let l:imgs = []
+    for linenum in range(l:line_start, l:line_end)
+        let l:line = getline(linenum)
+        let l:url=matchlist(l:line, '!\[.*\](.*\' . g:vimage_paste_directory_name[0] . '\(.*\))')
+        if !empty(l:url)
+            call add(l:imgs, l:images_dir . l:url[1])
+        endif
+    endfor
+	if exists(":Git")
+		execute 'Git add % ' . join(l:imgs, ' ')
+	else
+		call system("git add " . expand("%") . ' ' . join(l:imgs, ' '))
+	endif
+endfunction
+
 command MarkdownClipboardImage call s:MarkdownClipboardImage()
 command MarkdownDeleteImage call s:DeleteImage()
+command GitAddWithImage call s:GitAddWithImage()
 call s:DetectOS()
 let loaded_mdip = 1
