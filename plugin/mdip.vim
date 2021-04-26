@@ -208,7 +208,7 @@ function! s:GitAddWithImage()
         let l:line = getline(linenum)
         let l:url=matchlist(l:line, '!\[.*\](.*\' . g:vimage_paste_directory_name[0] . '\(.*\))')
         if !empty(l:url)
-            call add(l:imgs, l:images_dir . l:url[1])
+            call add(l:imgs, l:images_dir . split(l:url[1], ' =')[0])
         endif
     endfor
 	if exists(":Git")
