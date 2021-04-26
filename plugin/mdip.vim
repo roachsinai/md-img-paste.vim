@@ -104,6 +104,12 @@ function! s:SaveImageLinux(images_dir) abort
 	while v:true
 		let image_name = s:InputName(input_prompt)
 		if image_name == '' | return [-2, 0] | endif
+		" 'f name', f\ name -> fname
+		if image_name[0] == '''' || image_name[0] == '""'
+			let image_name = image_name[1: -2]
+		endif
+		let image_name = substitute(image_name, '\\ ', ' ', 'g')
+
 		let image_path = a:images_dir . '/' . image_name . '.' . extension
 		if filereadable(image_path)
 			let input_prompt = 'Image ' . image_name . ' exists, input name again: '
@@ -111,7 +117,7 @@ function! s:SaveImageLinux(images_dir) abort
 			break
 		endif
 	endwhile
-	call system('mv ' . image_tmp_name . ' ' . image_path)
+	call system('mv ' . image_tmp_name . ' ' . fnameescape(image_path))
 
     return [image_name, extension]
 endfunction
@@ -135,7 +141,12 @@ function! s:DeleteImageLinux()
 		echom 'Not an image tag line.'
 		return
 	endif
-	let l:image_path = s:RemoveTrailingChars(system('cd ' . expand("%:p:h") . ' && realpath ' . l:matches[-1]), '\n')
+	let l:relative_path = l:matches[-1]
+	let l:space_equal_pos = strridx(l:relative_path, ' =')
+	if l:space_equal_pos != -1
+		let l:space_equal_pos -= 1
+	endif
+	let l:image_path = s:RemoveTrailingChars(system('cd ' . expand("%:p:h") . ' && realpath ' . l:relative_path[0: l:space_equal_pos]), '\n')
 	if filereadable(l:image_path)
 		let l:choice = confirm('Delete image: ' . l:matches[-1] . '?', "&Yes\n&No", 2)
 		if l:choice == 1
@@ -147,6 +158,8 @@ function! s:DeleteImageLinux()
 		else
 			echo 'Quit image delete operation.'
 		endif
+	else
+		echom 'File: ' . l:image_path . ' not exists.'
 	endif
 endfunction
 
@@ -178,7 +191,7 @@ function! s:MarkdownClipboardImage()
     " image_name, used for both alt tag and image link
     let [image_name, extension] = s:SaveImage(images_dir)
     if type(image_name) == 1
-		let image_link = image_link_prefix . s:path_separator . image_name . '.' . extension
+		let image_link = image_link_prefix . s:path_separator . fnameescape(image_name) . '.' . extension
         execute 'normal! ' . g:vimage_paste_how_insert_link . '![' . image_name . '](' . image_link . ')'
 		echom "Image saved to: " . images_dir . s:path_separator . image_name . '.' . extension
 	elseif image_name == -1
