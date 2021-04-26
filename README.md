@@ -71,6 +71,8 @@ let g:vimage_paste_config_file = '.vimage_paste.json'
 let g:vimage_paste_how_insert_link = 'A'
 nnoremap <leader>p :MarkdownClipboardImage<CR>
 nnoremap <leader>id :MarkdownDeleteImage<CR>
+" use <leader>ga to run command GitAddWithImage
+let g:git_add_with_image_key = '<leader>ga'
 ```
 
 ## For linux user
