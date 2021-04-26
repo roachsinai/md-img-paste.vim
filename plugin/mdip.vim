@@ -214,7 +214,7 @@ function! s:GitAddWithImage()
 	if exists(":Git")
 		execute 'Git add % ' . join(l:imgs, ' ')
 	else
-		call system("git add " . expand("%") . ' ' . join(l:imgs, ' '))
+		echo trim(system("git add " . expand("%") . ' ' . join(l:imgs, ' ')))
 	endif
 endfunction
 
