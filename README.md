@@ -66,10 +66,11 @@ One more global variable `g:vimage_paste_how_insert_link` default value if `A`, 
 ## Setting is too short
 
 ```vim
-let g:vimage_paste_directory_name = ['images']
+let g:vimage_paste_directory_name = ['.images']
 let g:vimage_paste_config_file = '.vimage_paste.json'
 let g:vimage_paste_how_insert_link = 'A'
-nnoremap <leader>p :MarkdownClipboardImage<CR>
+" <leader>[i]mage[i]nsert"
+nnoremap <leader>ii :MarkdownClipboardImage<CR>
 nnoremap <leader>id :MarkdownDeleteImage<CR>
 " use <leader>ga to run command GitAddWithImage
 let g:git_add_with_image_key = '<leader>ga'
