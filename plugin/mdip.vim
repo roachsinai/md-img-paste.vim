@@ -220,7 +220,7 @@ function! s:DeleteImage()
     if s:os == "Linux"
         return s:DeleteImageLinux()
     elseif s:os == "WSL"
-            return s:DeleteImageWSL()
+            return s:DeleteImageLinux()
     elseif s:os == "Darwin"
         return s:DeleteImageMacOS()
     elseif s:os == "Windows"
