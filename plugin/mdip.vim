@@ -4,7 +4,6 @@ endif
 
 let g:vimage_paste_config_file = get(g:, 'vimage_paste_config_file', '.vimage_paste.json')
 let g:vimage_paste_directory_name = get(g:, 'vimage_paste_directory_name', ['.images', '.imgs', '.assets', 'images', 'imgs', 'assets', 'image', 'img', 'asset'])
-let s:image_tmp_name_prefix = '/tmp/vimge_paste'
 let g:vimage_paste_how_insert_link = get(g:, 'vimage_paste_how_insert_link', 'A')
 
 " https://stackoverflow.com/questions/57014805/check-if-using-windows-console-in-vim-while-in-windows-subsystem-for-linux
@@ -19,11 +18,16 @@ endfunction
 function! s:DetectOS()
     " detect os: https://vi.stackexchange.com/questions/2572/detect-os-in-vimscript
     let s:os = "Windows"
+	let s:image_tmp_name_prefix = s:RemoveTrailingChars(system('powershell.exe -NoProfile ''$env:Temp'''), '\r\n') . '\vimage_paste'
+    let s:image_tmp_name_prefix = substitute(s:image_tmp_name_prefix, "\/", "\\\\\\", "g")
     if !(has("win64") || has("win32") || has("win16"))
         let s:os = s:RemoveTrailingChars(system('uname'), '\n')
+		let s:image_tmp_name_prefix = '/tmp/vimge_paste'
     endif
 	if s:IsWSL()
 		let s:os = "WSL"
+		let s:image_tmp_name_prefix = s:RemoveTrailingChars(system('powershell.exe -NoProfile ''$env:Temp'''), '\r\n') . '\vimage_paste'
+		let s:image_tmp_name_prefix = substitute(s:image_tmp_name_prefix, "\/", "\\\\\\", "g")
 	endif
 	let s:path_separator = (s:os == "Windows" ? '\' : '/')
 endfunction
@@ -122,11 +126,60 @@ function! s:SaveImageLinux(images_dir) abort
     return [image_name, extension]
 endfunction
 
+function! s:SaveImageWSL(images_dir) abort
+	let image_tmp_name = s:image_tmp_name_prefix . string(rand() % 10000)
+	let targets = 'powershell.exe -NoProfile -sta "Add-Type -Assembly PresentationCore;'.
+            \'\$img = [Windows.Clipboard]::GetImage();'.
+            \'if (\$img -eq \$null) {'.
+            \'echo "";'.
+            \'Exit;'.
+            \'} else{'.
+            \'echo "success";}'.
+            \'\$fcb = new-object Windows.Media.Imaging.FormatConvertedBitmap(\$img, [Windows.Media.PixelFormats]::Rgb24, \$null, 0);'.
+            \'\$file = \"'. image_tmp_name . '\";'.
+            \'\$stream = [IO.File]::Open(\$file, \"OpenOrCreate\");'.
+            \'\$encoder = New-Object Windows.Media.Imaging.PngBitmapEncoder;'.
+            \'\$encoder.Frames.Add([Windows.Media.Imaging.BitmapFrame]::Create(\$fcb));'.
+            \'\$encoder.Save(\$stream);\$stream.Dispose();"'
+
+    if system(targets) == "empty\r\n"
+		return [-1, 0]
+	endif
+
+	let image_tmp_name = s:RemoveTrailingChars(system(printf('wslupath ''%s''', image_tmp_name)), '\n')
+	let extension = 'png'
+
+	let input_prompt = 'Image name: '
+	while v:true
+		let image_name = s:InputName(input_prompt)
+		if image_name == '' | return [-2, 0] | endif
+		" 'f name', f\ name -> fname
+		if image_name[0] == '''' || image_name[0] == '""'
+			let image_name = image_name[1: -2]
+		endif
+		let image_name = substitute(image_name, '\\ ', ' ', 'g')
+
+		let image_path = a:images_dir . '/' . image_name . '.' . extension
+		if filereadable(image_path)
+			let input_prompt = 'Image ' . image_name . ' exists, input name again: '
+		else
+			break
+		endif
+	endwhile
+	call system('mv ' . image_tmp_name . ' ' . fnameescape(image_path))
+
+    return [image_name, extension]
+endfunction
+
 function! s:SaveImage(images_dir)
     if s:os == "Linux"
         return s:SaveImageLinux(a:images_dir)
     elseif s:os == "WSL"
-            return s:SaveImageWSL(a:images_dir)
+		if !executable('wslupath')
+			echo "Install wslu please."
+			return [-2, '']
+		endif
+        return s:SaveImageWSL(a:images_dir)
     elseif s:os == "Darwin"
         return s:SaveImageMacOS(a:images_dir)
     elseif s:os == "Windows"
