@@ -16,18 +16,17 @@ function! s:IsWSL()
 endfunction
 
 function! s:DetectOS()
-    " detect os: https://vi.stackexchange.com/questions/2572/detect-os-in-vimscript
     let s:os = "Windows"
-	let s:image_tmp_name_prefix = s:RemoveTrailingChars(system('powershell.exe -NoProfile ''$env:Temp'''), '\r\n') . '\vimage_paste'
-    let s:image_tmp_name_prefix = substitute(s:image_tmp_name_prefix, "\/", "\\\\\\", "g")
+	" https://vi.stackexchange.com/a/2577/16299
     if !(has("win64") || has("win32") || has("win16"))
         let s:os = s:RemoveTrailingChars(system('uname'), '\n')
 		let s:image_tmp_name_prefix = '/tmp/vimge_paste'
+	else
+		let s:image_tmp_name_prefix = s:RemoveTrailingChars(system('powershell.exe -NoProfile ''$env:Temp'''), '\r\n') . '\vimage_paste'
+		let s:image_tmp_name_prefix = substitute(s:image_tmp_name_prefix, "\/", "\\\\\\", "g")
     endif
 	if s:IsWSL()
 		let s:os = "WSL"
-		let s:image_tmp_name_prefix = s:RemoveTrailingChars(system('powershell.exe -NoProfile ''$env:Temp'''), '\r\n') . '\vimage_paste'
-		let s:image_tmp_name_prefix = substitute(s:image_tmp_name_prefix, "\/", "\\\\\\", "g")
 	endif
 	let s:path_separator = (s:os == "Windows" ? '\' : '/')
 endfunction
