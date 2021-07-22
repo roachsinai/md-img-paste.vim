@@ -127,6 +127,7 @@ endfunction
 
 function! s:SaveImageWSL(images_dir) abort
 	let image_tmp_name = s:image_tmp_name_prefix . string(rand() % 10000)
+	" https://stackoverflow.com/a/55226209/6074780
 	let res = 'powershell.exe -NoProfile -command ''$img = Get-Clipboard -format image; if(!$img) {echo "empty"} else {$img.save("' . image_tmp_name . '")}'''
 
     if system(res) == "empty\r\n"
