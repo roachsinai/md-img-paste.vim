@@ -85,7 +85,7 @@ endfunction
 
 function! s:SaveImageLinux(images_dir) abort
     let targets = filter(
-                \ systemlist('xclip -selection clipboard -t TARGETS -o'),
+                \ systemlist('xclip -selection clipboard -t TARGETS o'),
                 \ 'v:val =~# ''image/''')
 
     if empty(targets) | return [-1, 0] | endif
@@ -127,21 +127,9 @@ endfunction
 
 function! s:SaveImageWSL(images_dir) abort
 	let image_tmp_name = s:image_tmp_name_prefix . string(rand() % 10000)
-	let targets = 'powershell.exe -NoProfile -sta "Add-Type -Assembly PresentationCore;'.
-            \'\$img = [Windows.Clipboard]::GetImage();'.
-            \'if (\$img -eq \$null) {'.
-            \'echo "";'.
-            \'Exit;'.
-            \'} else{'.
-            \'echo "success";}'.
-            \'\$fcb = new-object Windows.Media.Imaging.FormatConvertedBitmap(\$img, [Windows.Media.PixelFormats]::Rgb24, \$null, 0);'.
-            \'\$file = \"'. image_tmp_name . '\";'.
-            \'\$stream = [IO.File]::Open(\$file, \"OpenOrCreate\");'.
-            \'\$encoder = New-Object Windows.Media.Imaging.PngBitmapEncoder;'.
-            \'\$encoder.Frames.Add([Windows.Media.Imaging.BitmapFrame]::Create(\$fcb));'.
-            \'\$encoder.Save(\$stream);\$stream.Dispose();"'
+	let res = 'powershell.exe -NoProfile -command ''$img = Get-Clipboard -format image; if(!$img) {echo "empty"} else {$img.save("' . image_tmp_name . '")}'''
 
-    if system(targets) == "empty\r\n"
+    if system(res) == "empty\r\n"
 		return [-1, 0]
 	endif
 
