@@ -126,15 +126,18 @@ function! s:SaveImageLinux(images_dir) abort
 endfunction
 
 function! s:SaveImageWSL(images_dir) abort
+	" use WSL path as powershell can save img in WSL directly,
+	" instead of we have to use a windows path, then change it to WSL path
+	" to let mv command work
 	let image_tmp_name = s:image_tmp_name_prefix . string(rand() % 10000)
 	" https://stackoverflow.com/a/55226209/6074780
 	let res = 'powershell.exe -NoProfile -command ''$img = Get-Clipboard -format image; if(!$img) {echo "empty"} else {$img.save("' . image_tmp_name . '")}'''
+	" let image_tmp_name = s:RemoveTrailingChars(system(printf('wslpath -u ''%s''', image_tmp_name)), '\n')
 
     if system(res) == "empty\r\n"
 		return [-1, 0]
 	endif
 
-	let image_tmp_name = s:RemoveTrailingChars(system(printf('wslupath ''%s''', image_tmp_name)), '\n')
 	let extension = 'png'
 
 	let input_prompt = 'Image name: '
