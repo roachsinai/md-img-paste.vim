@@ -19,15 +19,17 @@ function! s:DetectOS()
     let s:os = "Windows"
 	" https://vi.stackexchange.com/a/2577/16299
     if !(has("win64") || has("win32") || has("win16"))
-        let s:os = s:RemoveTrailingChars(system('uname'), '\n')
-		let s:image_tmp_name_prefix = '/tmp/vimge_paste'
-	else
-		let s:image_tmp_name_prefix = s:RemoveTrailingChars(system('powershell.exe -NoProfile ''$env:Temp'''), '\r\n') . '\vimage_paste'
-		let s:image_tmp_name_prefix = substitute(s:image_tmp_name_prefix, "\/", "\\\\\\", "g")
-    endif
+        let s:os = s:RemoveTailingChars(system('uname'), '\n')
+	endif
 	if s:IsWSL()
 		let s:os = "WSL"
 	endif
+	if s:os == "WSL" || s:os == "Windows"
+		let s:image_tmp_name_prefix = s:RemoveTailingChars(system('powershell.exe -NoProfile ''$env:Temp'''), '\r\n') . '\vimage_paste'
+		let s:image_tmp_name_prefix = substitute(s:image_tmp_name_prefix, "\/", "\\\\\\", "g")
+	else
+		let s:image_tmp_name_prefix = '/tmp/vimge_paste'
+    endif
 	let s:path_separator = (s:os == "Windows" ? '\' : '/')
 endfunction
 
@@ -60,9 +62,9 @@ function! s:SafeMakeDir()
 	if has_key(config_json, 'images_dir')
 		let images_dir = config_json['images_dir']
 		" string prefix to fill in link part of ![]()
-		let image_link_prefix = s:RemoveTrailingChars(images_dir, s:path_separator)
+		let image_link_prefix = s:RemoveTailingChars(images_dir, s:path_separator)
 		if images_dir[0] == '.'
-			let images_dir = s:RemoveTrailingChars(system('realpath ' . expand("%:p:h") . s:path_separator . image_link_prefix), '\n')
+			let images_dir = s:RemoveTailingChars(system('realpath ' . expand("%:p:h") . s:path_separator . image_link_prefix), '\n')
 		endif
 	else
 		let image_dir_name = g:vimage_paste_directory_name[0]
@@ -73,7 +75,7 @@ function! s:SafeMakeDir()
 			endif
 		endfor
 		let images_dir = images_root . s:path_separator . image_dir_name
-		let image_link_prefix = s:RemoveTrailingChars(system('realpath --relative-to=' . expand("%:p:h") . ' ' . images_dir), '\n')
+		let image_link_prefix = s:RemoveTailingChars(system('realpath --relative-to=' . expand("%:p:h") . ' ' . images_dir), '\n')
 	endif
 
     if !isdirectory(images_dir)
@@ -126,13 +128,10 @@ function! s:SaveImageLinux(images_dir) abort
 endfunction
 
 function! s:SaveImageWSL(images_dir) abort
-	" use WSL path as powershell can save img in WSL directly,
-	" instead of we have to use a windows path, then change it to WSL path
-	" to let mv command work
 	let image_tmp_name = s:image_tmp_name_prefix . string(rand() % 10000)
 	" https://stackoverflow.com/a/55226209/6074780
 	let res = 'powershell.exe -NoProfile -command ''$img = Get-Clipboard -format image; if(!$img) {echo "empty"} else {$img.save("' . image_tmp_name . '")}'''
-	" let image_tmp_name = s:RemoveTrailingChars(system(printf('wslpath -u ''%s''', image_tmp_name)), '\n')
+	let image_tmp_name = s:RemoveTailingChars(system(printf('wslpath -u ''%s''', image_tmp_name)), '\n')
 
     if system(res) == "empty\r\n"
 		return [-1, 0]
@@ -190,7 +189,7 @@ function! s:DeleteImageLinux()
 	if l:space_equal_pos != -1
 		let l:space_equal_pos -= 1
 	endif
-	let l:image_path = s:RemoveTrailingChars(system('cd ' . expand("%:p:h") . ' && realpath ' . l:relative_path[0: l:space_equal_pos]), '\n')
+	let l:image_path = s:RemoveTailingChars(system('cd ' . expand("%:p:h") . ' && realpath ' . l:relative_path[0: l:space_equal_pos]), '\n')
 	if filereadable(l:image_path)
 		let l:choice = confirm('Delete image: ' . l:matches[-1] . '?', "&Yes\n&No", 2)
 		if l:choice == 1
@@ -226,7 +225,7 @@ function! s:InputName(input_prompt)
     return name
 endfunction
 
-function! s:RemoveTrailingChars(target, trailing)
+function! s:RemoveTailingChars(target, trailing)
 	return substitute(a:target, a:trailing . '$', '', '')
 endfunction
 
