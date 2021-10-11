@@ -87,7 +87,7 @@ endfunction
 
 function! s:SaveImageLinux(images_dir) abort
     let targets = filter(
-                \ systemlist('xclip -selection clipboard -t TARGETS o'),
+                \ systemlist('xclip -selection clipboard -t TARGETS -o'),
                 \ 'v:val =~# ''image/''')
 
     if empty(targets) | return [-1, 0] | endif
