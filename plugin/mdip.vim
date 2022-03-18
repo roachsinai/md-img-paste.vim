@@ -20,9 +20,9 @@ function! s:DetectOS()
 	" https://vi.stackexchange.com/a/2577/16299
     if !(has("win64") || has("win32") || has("win16"))
         let s:os = s:RemoveTailingChars(system('uname'), '\n')
-	endif
-	if s:IsWSL()
-		let s:os = "WSL"
+		if s:IsWSL()
+			let s:os = "WSL"
+		endif
 	endif
 	if s:os == "WSL" || s:os == "Windows"
 		let s:image_tmp_name_prefix = s:RemoveTailingChars(system('powershell.exe -NoProfile ''$env:Temp'''), '\r\n') . '\vimage_paste'
