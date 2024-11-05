@@ -293,7 +293,7 @@ function! s:GitAddWithImage()
             call add(l:imgs, l:images_dir . split(l:url[1], ' =')[0])
         endif
     endfor
-    if exists(":Git")
+    if exists(":Git") == 2
         execute 'Git add % ' . join(l:imgs, ' ')
     else
         echo trim(system("git add " . expand("%") . ' ' . join(l:imgs, ' ')))
